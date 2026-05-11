@@ -6,9 +6,11 @@ Symfony 7.4 aplikace pro vyhledávání produktů s file-based cache a počítá
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
-## Spuštění
+## Instalace a spuštění
 
 ```bash
+git clone https://github.com/rychnal/logio-test.git
+cd logio-test
 docker compose up -d
 ```
 
@@ -25,9 +27,9 @@ curl http://localhost:8080/api/products/123
 ```
 
 **Workflow při každém volání:**
-1. Zkontroluje se file cache (`var/product_cache/{id}.json`)
+1. Zkontroluje se cache (`var/share/dev/pools/app/`, klíč `product.{id}`)
 2. Pokud produkt není v cache → zavolá se DB driver (výchozí: ElasticSearch)
-3. Výsledek se uloží do cache
+3. Výsledek se uloží do cache (nekonečná platnost)
 4. Počet dotazů na produkt se zvýší o 1 (`var/query_counts.json`)
 5. Vrátí se JSON s daty produktu
 
@@ -53,18 +55,9 @@ Po změně vymaž cache:
 docker compose exec app php bin/console cache:clear
 ```
 
-### Přepnutí cache technologie (filesystem → Redis)
+### Přepnutí cache technologie
 
-Cache řeší Symfony `cache.app` pool — žádná vlastní implementace, jen konfigurace.
-
-V `app/config/packages/cache.yaml`:
-
-```yaml
-framework:
-    cache:
-        app: cache.adapter.redis
-        default_redis_dsn: 'redis://localhost'
-```
+Cache řeší Symfony `cache.app` pool — žádná vlastní implementace, jen konfigurace v `app/config/packages/cache.yaml`. Podporované adaptery: filesystem (výchozí), Redis, Memcached, APCu a další.
 
 ### Přepnutí počítadla dotazů
 
