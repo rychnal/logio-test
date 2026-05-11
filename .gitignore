@@ -1,0 +1,29 @@
+# Dependencies
+/app/vendor/
+
+# Cache and logs
+/app/var/cache/
+/app/var/log/
+/app/var/
+
+# Environment
+/app/.env.local
+/app/.env.local.php
+/app/.env.*.local
+
+# Build
+/app/public/bundles/
+
+# PHPUnit
+/app/.phpunit.result.cache
+/app/phpunit.xml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

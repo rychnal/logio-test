@@ -1,0 +1,51 @@
+# yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+
+parameters:
+    app.query_counter_file: '%kernel.project_dir%/var/query_counts.json'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+
+    # --- Driver stubs (replace with real framework-provided implementations) ---
+
+    App\Contract\Driver\ElasticSearchDriverInterface:
+        alias: App\Driver\ElasticSearchDriver
+
+    App\Contract\Driver\MysqlDriverInterface:
+        alias: App\Driver\MysqlDriver
+
+    # --- Counter ---
+
+    App\Counter\FileProductViewCounter:
+        arguments:
+            $counterFilePath: '%app.query_counter_file%'
+
+    App\Contract\ProductViewCounterInterface:
+        alias: App\Counter\FileProductViewCounter
+
+    # --- Active data source: change alias to MysqlProductRepository to switch ---
+
+    app.active_product_repository:
+        alias: App\Repository\ElasticSearchProductRepository
+
+    # --- Decorator chain: CountingRepository -> CachedRepository -> active repository ---
+
+    App\Repository\CachedProductRepository:
+        arguments:
+            $inner: '@app.active_product_repository'
+            $cache: '@cache.app'
+
+    App\Repository\CountingProductRepository:
+        arguments:
+            $inner: '@App\Repository\CachedProductRepository'
+            $counter: '@App\Contract\ProductViewCounterInterface'
+
+    # --- Controller gets the outermost decorator ---
+
+    App\Contract\ProductFinderInterface:
+        alias: App\Repository\CountingProductRepository
